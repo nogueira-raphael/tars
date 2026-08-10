@@ -1,6 +1,12 @@
 [tool.uv.workspace]
 members = ["services/*"]
 
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
 [tool.ruff]
 target-version = "py313"
 line-length = 100
