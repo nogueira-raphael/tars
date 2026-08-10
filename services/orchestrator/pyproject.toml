@@ -1,0 +1,29 @@
+[project]
+name = "orchestrator"
+version = "0.1.0"
+description = "TARS Conversation domain — thin LLM tool-calling loop and approval gate"
+requires-python = ">=3.13"
+license = "MIT"
+dependencies = [
+    "fastapi>=0.115",
+    "mcp>=2.0",
+    "httpx>=0.27",
+    "anthropic>=0.40",
+    "openai>=1.55",
+    "google-genai>=1.0",
+    "cryptography>=43",
+    "pydantic>=2.9",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/orchestrator"]

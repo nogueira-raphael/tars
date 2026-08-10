@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# Node / web
+node_modules/
+dist/
+.vite/
+
+# Tauri
+web/src-tauri/target/
+
+# Local runtime state (SQLite stores, generated keys) — never commit real data
+*.sqlite3
+*.db
+.env
+.env.*
+!.env.example
+
+# Docker
+docker/data/
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Claude Code session state (machine-local, not project source)
+.claude/
