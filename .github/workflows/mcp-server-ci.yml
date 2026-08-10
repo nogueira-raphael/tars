@@ -1,0 +1,33 @@
+name: mcp-server CI
+
+# Also triggers on services/tars-core/** — mcp-server imports tars-core
+# directly (see AGENTS.md), so a tars-core change can break mcp-server too.
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/mcp-server/**
+      - services/tars-core/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/mcp-server-ci.yml
+      - .github/workflows/_python-ci.yml
+  pull_request:
+    paths:
+      - services/mcp-server/**
+      - services/tars-core/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/mcp-server-ci.yml
+      - .github/workflows/_python-ci.yml
+
+concurrency:
+  group: mcp-server-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      package: mcp-server
+      working-directory: services/mcp-server

@@ -1,0 +1,29 @@
+name: tars-core CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/tars-core/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/tars-core-ci.yml
+      - .github/workflows/_python-ci.yml
+  pull_request:
+    paths:
+      - services/tars-core/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/tars-core-ci.yml
+      - .github/workflows/_python-ci.yml
+
+concurrency:
+  group: tars-core-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      package: tars-core
+      working-directory: services/tars-core

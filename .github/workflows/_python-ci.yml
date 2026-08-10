@@ -1,0 +1,53 @@
+name: Python service CI (reusable)
+
+# Shared pipeline definition for the three Python services in the uv
+# workspace (tars-core, mcp-server, orchestrator). Called by their own
+# per-project workflow files — see docs/architecture/domain-model.md for
+# why they're kept as separate checks instead of one shared job. Change the
+# steps here once; every service picks it up on its next run.
+
+on:
+  workflow_call:
+    inputs:
+      package:
+        description: uv workspace package name (matches `name` in that service's pyproject.toml)
+        required: true
+        type: string
+      working-directory:
+        description: Path to the service, relative to the repo root (e.g. services/tars-core)
+        required: true
+        type: string
+
+jobs:
+  quality:
+    name: lint, type-check, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Sync workspace (this package only)
+        run: uv sync --package ${{ inputs.package }} --locked
+
+      - name: ruff check
+        run: uv run ruff check ${{ inputs.working-directory }}
+
+      - name: ruff format --check
+        run: uv run ruff format --check ${{ inputs.working-directory }}
+
+      - name: mypy --strict
+        run: >-
+          uv run --package ${{ inputs.package }} mypy
+          ${{ inputs.working-directory }}/src
+          ${{ inputs.working-directory }}/tests
+
+      - name: pytest
+        run: |
+          if find "${{ inputs.working-directory }}/tests" -name 'test_*.py' | grep -q .; then
+            uv run --package ${{ inputs.package }} pytest ${{ inputs.working-directory }}/tests -v
+          else
+            echo "No test files yet for ${{ inputs.package }} — nothing to run. See the build order in AGENTS.md."
+          fi

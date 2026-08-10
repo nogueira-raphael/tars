@@ -1,0 +1,66 @@
+name: web CI
+
+# web/ isn't scaffolded yet (last step in the build order, see AGENTS.md) —
+# every step below is a no-op until web/package.json exists, so this file
+# doesn't need to be touched again when that day comes.
+on:
+  push:
+    branches: [main]
+    paths:
+      - web/**
+      - .github/workflows/web-ci.yml
+  pull_request:
+    paths:
+      - web/**
+      - .github/workflows/web-ci.yml
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check whether web/ is scaffolded yet
+        id: scaffolded
+        run: |
+          if [ -f web/package.json ]; then
+            echo "value=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Not scaffolded yet — nothing to do
+        if: steps.scaffolded.outputs.value == 'false'
+        run: echo "web/package.json doesn't exist yet (see web/README.md) — skipping."
+
+      - uses: pnpm/action-setup@v4
+        if: steps.scaffolded.outputs.value == 'true'
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        if: steps.scaffolded.outputs.value == 'true'
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        if: steps.scaffolded.outputs.value == 'true'
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Biome check
+        if: steps.scaffolded.outputs.value == 'true'
+        working-directory: web
+        run: pnpm biome check .
+
+      - name: Vitest
+        if: steps.scaffolded.outputs.value == 'true'
+        working-directory: web
+        run: pnpm vitest run

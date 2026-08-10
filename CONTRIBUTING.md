@@ -21,7 +21,7 @@ Thanks for taking a look. The project is early — architecture is settled (`doc
 
 - Small, focused PRs over large ones — easier to review, easier to revert.
 - Conventional commit-style prefixes (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`) are encouraged but not yet enforced by tooling.
-- CI runs lint + tests on every push/PR. Docker images and the Tauri installer only build on release tags.
+- CI is split one pipeline per project (`.github/workflows/{tars-core,mcp-server,orchestrator,web}-ci.yml`), each path-triggered so touching one project doesn't run the others' checks — a PR that only touches `services/orchestrator` won't wait on `tars-core`'s pipeline. `mcp-server`'s pipeline also runs on `tars-core` changes, since it imports it directly. Every pipeline runs lint + type-check + tests on every push/PR; Docker images and the Tauri installer only build on release tags (not set up yet).
 
 ## Reporting bugs / proposing features
 

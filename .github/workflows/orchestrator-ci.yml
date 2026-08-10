@@ -1,0 +1,31 @@
+name: orchestrator CI
+
+# No services/tars-core/** trigger here on purpose — orchestrator never
+# imports tars-core directly (see AGENTS.md), so it can't be broken by it.
+on:
+  push:
+    branches: [main]
+    paths:
+      - services/orchestrator/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/orchestrator-ci.yml
+      - .github/workflows/_python-ci.yml
+  pull_request:
+    paths:
+      - services/orchestrator/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/orchestrator-ci.yml
+      - .github/workflows/_python-ci.yml
+
+concurrency:
+  group: orchestrator-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    uses: ./.github/workflows/_python-ci.yml
+    with:
+      package: orchestrator
+      working-directory: services/orchestrator
