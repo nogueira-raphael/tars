@@ -3,13 +3,15 @@
 The credential itself (password/secret) never lives on this object — only a
 reference to it in the encrypted local store. See docs/architecture/security.md
 and docs/adr/0008-credential-storage-two-local-stores.md.
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import StrEnum
-
-from pydantic import BaseModel
 
 
 class Engine(StrEnum):
@@ -22,7 +24,8 @@ class Engine(StrEnum):
     SQL_SERVER = "sql_server"
 
 
-class ConnectionId(BaseModel):
+@dataclass(frozen=True, slots=True)
+class ConnectionId:
     """Opaque identifier — a value object, not just a bare str, so callers can't
     accidentally pass a table name or query id where a connection id is expected.
     """
@@ -33,7 +36,8 @@ class ConnectionId(BaseModel):
         return self.value
 
 
-class Connection(BaseModel):
+@dataclass(slots=True)
+class Connection:
     """A saved connection. `credential_ref` points into the MCP Server's local
     encrypted store (`infrastructure.connection_store`) — this object itself is
     safe to log, serialize, and send over MCP without leaking a secret.

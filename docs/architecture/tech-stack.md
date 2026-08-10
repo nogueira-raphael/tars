@@ -24,7 +24,7 @@ Chosen 2026-08-07/10, favoring what's already the de facto standard for each lay
 | Postgres driver | `psycopg3` (async) | Unified sync/async API, richer feature set (LISTEN/NOTIFY) — raw throughput isn't the bottleneck for a diagnostics tool. |
 | SQL Server driver | `mssql-python` (Microsoft's official driver, GA Nov 2025) | Replaces `pyodbc` — bundles the ODBC driver, pyodbc-compatible API, native Apple Silicon support. |
 | ORM | None | Not even SQLAlchemy — see `docs/adr/0002-...` for why. |
-| Validation | Pydantic v2 | Ships with FastAPI and the MCP SDK. |
+| Validation | Pydantic v2 | Ships with FastAPI and the MCP SDK. **Boundary-only** — MCP tool-argument validation, FastAPI request/response models. Never inside `domain/`, which uses stdlib `dataclasses`; see `docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md`. |
 | SQL classification | `sqlglot` | Covers both Postgres and T-SQL dialects; used to classify `execute_sql` calls as mutating or not. |
 | LLM providers | Official SDKs only: `anthropic`, `openai`, `google-genai`; Ollama via its OpenAI-compatible REST API | No multi-provider framework — see `docs/adr/0003-thin-custom-orchestrator-not-langgraph.md`. |
 | Internal HTTP client | `httpx` (async) | Orchestrator → MCP Server calls. |

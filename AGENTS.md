@@ -31,6 +31,7 @@ Full structure and the dependency rules: `docs/architecture/domain-model.md` and
 - `mcp-server` gets no `domain/` folder. If you find yourself wanting to put business logic there, it belongs in `tars-core` instead — `mcp-server` should stay a thin, deterministic translation layer between the MCP protocol and `tars-core` use cases.
 - Database credentials live only in `tars-core`'s local store (Fernet-encrypted SQLite). `orchestrator` has its own separate local store for chat history/sessions/LLM API keys. Never merge these into one shared file — see `docs/adr/0008-credential-storage-two-local-stores.md` for why.
 - No ORM. Not SQLAlchemy, not anything else, for talking to target databases (Postgres via `psycopg3`, SQL Server via `mssql-python`, both behind the `DatabaseProvider` port). See `docs/adr/0002-...` and `docs/architecture/tech-stack.md` for the reasoning — this has already been debated, don't relitigate it in a PR.
+- `domain/` uses plain stdlib `dataclasses`, never Pydantic (`BaseModel` or otherwise) — not even for convenience. This was violated once already in the initial scaffold and had to be fixed; see `docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md`. Pydantic belongs at infrastructure/interface boundaries (`mcp-server`'s future tool-argument validation, `orchestrator`'s future FastAPI models) — never in `domain/`, in either service.
 
 ## Toolchain (once code exists)
 

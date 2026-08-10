@@ -1,3 +1,5 @@
+import dataclasses
+import json
 from datetime import UTC, datetime
 
 from tars_core.domain.connection import Engine
@@ -61,7 +63,7 @@ def test_estimate_only_plan_has_no_actual_stats() -> None:
     assert plan.execution_time_ms is None
 
 
-def test_plan_round_trips_through_json_without_losing_warnings() -> None:
+def _plan_with_a_warning() -> ExecutionPlan:
     root = PlanNode(
         node_id="0",
         operation=PlanOperation.SEQUENTIAL_SCAN,
@@ -77,16 +79,33 @@ def test_plan_round_trips_through_json_without_losing_warnings() -> None:
             )
         ],
     )
-    plan = ExecutionPlan(
+    return ExecutionPlan(
         query=_query(),
         connection_id="conn-1",
         root=root,
         is_actual=True,
-        captured_at=datetime.now(UTC),
+        captured_at=datetime(2026, 8, 10, tzinfo=UTC),
     )
 
-    restored = ExecutionPlan.model_validate_json(plan.model_dump_json())
 
-    assert restored.root.warnings[0].kind is PlanWarningKind.ROW_ESTIMATE_MISMATCH
-    assert restored.root.warnings[0].severity is Severity.CRITICAL
-    assert restored.root.actual_rows == 95_000
+def test_dataclasses_give_value_equality_for_free() -> None:
+    # Two independently-built trees with identical data are equal — the
+    # property Cosmic Python calls out as the point of using dataclasses for
+    # value objects/entities instead of a validation-library base class.
+    assert _plan_with_a_warning() == _plan_with_a_warning()
+
+
+def test_plan_is_serializable_with_stdlib_alone_no_pydantic_required() -> None:
+    # Domain objects stay dependency-free (see docs/adr/0012); this only
+    # proves `dataclasses.asdict` + stdlib `json` can turn one into a plain
+    # dict, not that this is the final MCP-boundary wire format — that
+    # belongs to mcp-server's infrastructure layer, not here.
+    plan = _plan_with_a_warning()
+
+    as_dict = dataclasses.asdict(plan)
+    raw = json.dumps(as_dict, default=str)
+    restored = json.loads(raw)
+
+    assert restored["root"]["warnings"][0]["kind"] == PlanWarningKind.ROW_ESTIMATE_MISMATCH.value
+    assert restored["root"]["warnings"][0]["severity"] == Severity.CRITICAL.value
+    assert restored["root"]["actual_rows"] == 95_000

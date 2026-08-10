@@ -9,14 +9,19 @@ TODO: flesh out real fields (id, connection_id, provider, messages) when
 docs/architecture/domain-model.md. This placeholder exists only so that
 `infrastructure.session_store` and `application.send_message` have
 something real to type-check against in the meantime.
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
 """
 
 from __future__ import annotations
 
-from pydantic import BaseModel
+from dataclasses import dataclass, field
 
 from orchestrator.domain.message import Message
 
 
-class ChatSession(BaseModel):
-    messages: list[Message] = []  # TODO: id, connection_id, provider, real message history.
+@dataclass(slots=True)
+class ChatSession:
+    messages: list[Message] = field(default_factory=list)
+    # TODO: id, connection_id, provider, real message history.

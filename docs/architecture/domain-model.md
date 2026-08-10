@@ -71,6 +71,8 @@ web/src/
 
 `domain/` never imports `application/` or `infrastructure/`. `application/` only imports `domain/ports.py` interfaces, never a concrete implementation. This is what makes `tars-core`'s unit tests runnable without a real Postgres or SQL Server instance — swap the `DatabaseProvider` port for a fake.
 
+This includes third-party libraries, not just other layers of this codebase: `domain/` types are plain stdlib `dataclasses`, never Pydantic — see `docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md`. Pydantic is still used in the project, just never inside `domain/`.
+
 ## Build order
 
 `tars-core` → `mcp-server` (validated against a generic MCP client, no `orchestrator`/`web` needed) → SQL Server provider (second engine proves the abstraction) → `orchestrator` → `web` last.

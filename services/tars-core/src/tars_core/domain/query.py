@@ -5,18 +5,21 @@ independent of literal values — needed for the plan-diff differentiator
 (deferred past v1, see docs/architecture/overview.md), but defined now
 because `classify_statement` and `explain_query` both need a stable way to
 refer to "this query" regardless of when the fingerprint gets consumed.
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
 """
 
 from __future__ import annotations
 
 import hashlib
-
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 from tars_core.domain.connection import Engine
 
 
-class QueryFingerprint(BaseModel):
+@dataclass(frozen=True, slots=True)
+class QueryFingerprint:
     """A hash of the query's normalized form (literals stripped, whitespace
     collapsed). Two executions of "the same query" with different literal
     values produce the same fingerprint.
@@ -38,7 +41,8 @@ class QueryFingerprint(BaseModel):
         return self.value
 
 
-class Query(BaseModel):
+@dataclass(slots=True)
+class Query:
     sql: str
     engine: Engine
     fingerprint: QueryFingerprint | None = None

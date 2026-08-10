@@ -3,13 +3,15 @@
 Recommendation-only by design — no apply path (see docs/architecture/
 overview.md and the approval-gate scope note in
 docs/adr/0006-approval-gate-via-mcp-elicitation.md).
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import StrEnum
-
-from pydantic import BaseModel
 
 from tars_core.domain.severity import Severity
 
@@ -23,7 +25,8 @@ class IndexRecommendationKind(StrEnum):
     """An existing index is a strict subset/prefix of another and adds no value."""
 
 
-class IndexRecommendation(BaseModel):
+@dataclass(frozen=True, slots=True)
+class IndexRecommendation:
     kind: IndexRecommendationKind
     severity: Severity
     schema_name: str
@@ -31,9 +34,9 @@ class IndexRecommendation(BaseModel):
     columns: list[str]
     """For MISSING: the suggested index's columns. For UNUSED/REDUNDANT: the
     existing index's columns."""
+    rationale: str
     existing_index_name: str | None = None
     """Set for UNUSED/REDUNDANT; None for MISSING."""
-    rationale: str
     estimated_benefit: str | None = None
     """Free-text estimate (e.g. "could avoid a sequential scan reading ~2M
     rows"), not a formal cost number — the underlying analysis differs too

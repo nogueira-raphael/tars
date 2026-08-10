@@ -8,9 +8,12 @@ dependencies = [
     "psycopg[binary,pool]>=3.2",
     "mssql-python",
     "sqlglot>=27.0",
-    "pydantic>=2.9",
     "cryptography>=43",
 ]
+# No pydantic here on purpose — the domain layer uses stdlib dataclasses,
+# not Pydantic. See docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
+# If infrastructure/ ever needs Pydantic for its own serialization, add it
+# back explicitly with a comment explaining why, not as a domain dependency.
 
 [dependency-groups]
 dev = [

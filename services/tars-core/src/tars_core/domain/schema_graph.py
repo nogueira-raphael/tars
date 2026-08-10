@@ -6,14 +6,18 @@ Less engine variance than execution plans — both Postgres's catalog
 roughly the same relational concepts. `raw_data_type` still preserves the
 engine-native type name (e.g. `timestamp with time zone` vs. `datetime2`),
 since normalizing type names losslessly across engines isn't attempted here.
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md.
 """
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from dataclasses import dataclass, field
 
 
-class Column(BaseModel):
+@dataclass(slots=True)
+class Column:
     name: str
     raw_data_type: str
     """Engine-native type name, e.g. "timestamp with time zone" (Postgres) or
@@ -23,7 +27,8 @@ class Column(BaseModel):
     is_primary_key: bool = False
 
 
-class ForeignKey(BaseModel):
+@dataclass(slots=True)
+class ForeignKey:
     name: str
     columns: list[str]
     references_schema: str
@@ -31,16 +36,18 @@ class ForeignKey(BaseModel):
     references_columns: list[str]
 
 
-class Table(BaseModel):
+@dataclass(slots=True)
+class Table:
     name: str
     schema_name: str
     columns: list[Column]
-    foreign_keys: list[ForeignKey] = Field(default_factory=list)
+    foreign_keys: list[ForeignKey] = field(default_factory=list)
     estimated_row_count: int | None = None
     size_bytes: int | None = None
 
 
-class SchemaGraph(BaseModel):
+@dataclass(slots=True)
+class SchemaGraph:
     """Aggregate root returned by `list_tables`."""
 
     connection_id: str

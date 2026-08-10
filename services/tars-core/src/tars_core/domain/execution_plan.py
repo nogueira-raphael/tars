@@ -16,14 +16,19 @@ Server doesn't). `PlanNode.operation` normalizes the taxonomy with a
 best-effort mapping; `PlanNode.raw_operation_name` and
 `PlanNode.engine_specific` preserve what doesn't map cleanly, so nothing is
 silently lost for the sake of forcing a false equivalence.
+
+Plain stdlib `dataclasses`, not Pydantic — see
+docs/adr/0012-domain-layer-uses-dataclasses-not-pydantic.md. Parsing raw
+EXPLAIN/showplan output into these types, and serializing them back out over
+MCP, are infrastructure/interface concerns, not domain ones — that's where
+Pydantic (or a hand-rolled JSON encoder) belongs.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum
-
-from pydantic import BaseModel, Field
 
 from tars_core.domain.query import Query
 from tars_core.domain.severity import Severity
@@ -64,13 +69,15 @@ class PlanWarningKind(StrEnum):
     OTHER = "other"
 
 
-class PlanWarning(BaseModel):
+@dataclass(frozen=True, slots=True)
+class PlanWarning:
     kind: PlanWarningKind
     severity: Severity
     message: str
 
 
-class PlanNode(BaseModel):
+@dataclass(slots=True)
+class PlanNode:
     """One operator in the plan tree. Costs and times are only meaningful
     *within* a single plan — never compare `estimated_total_cost` or
     `actual_time_ms` across two plans from different engines, their units
@@ -102,12 +109,12 @@ class PlanNode(BaseModel):
 
     filter: str | None = None
     join_condition: str | None = None
-    sort_keys: list[str] = Field(default_factory=list)
+    sort_keys: list[str] = field(default_factory=list)
 
-    warnings: list[PlanWarning] = Field(default_factory=list)
-    children: list[PlanNode] = Field(default_factory=list)
+    warnings: list[PlanWarning] = field(default_factory=list)
+    children: list[PlanNode] = field(default_factory=list)
 
-    engine_specific: dict[str, object] = Field(default_factory=dict)
+    engine_specific: dict[str, object] = field(default_factory=dict)
     """Raw passthrough for fields that don't normalize cleanly (e.g. Postgres's
     buffer hit/read counts, SQL Server's memory grant info). Not meant for the
     Web UI's default rendering — an escape hatch for engine-specific tooling
@@ -115,7 +122,8 @@ class PlanNode(BaseModel):
     """
 
 
-class ExecutionPlan(BaseModel):
+@dataclass(slots=True)
+class ExecutionPlan:
     """Aggregate root returned by `explain_query`."""
 
     query: Query
@@ -125,6 +133,6 @@ class ExecutionPlan(BaseModel):
     """True if this plan carries real execution stats (ANALYZE); False if
     it's estimate-only. `actual_rows`/`actual_time_ms` are None throughout
     the tree when this is False."""
+    captured_at: datetime
     planning_time_ms: float | None = None
     execution_time_ms: float | None = None
-    captured_at: datetime

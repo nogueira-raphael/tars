@@ -1160,7 +1160,6 @@ dependencies = [
     { name = "cryptography" },
     { name = "mssql-python" },
     { name = "psycopg", extra = ["binary", "pool"] },
-    { name = "pydantic" },
     { name = "sqlglot" },
 ]
 
@@ -1175,7 +1174,6 @@ requires-dist = [
     { name = "cryptography", specifier = ">=43" },
     { name = "mssql-python" },
     { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2" },
-    { name = "pydantic", specifier = ">=2.9" },
     { name = "sqlglot", specifier = ">=27.0" },
 ]
 

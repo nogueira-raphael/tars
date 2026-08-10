@@ -1,3 +1,5 @@
+import dataclasses
+
 from tars_core.domain.connection import Connection, ConnectionId, Engine
 
 
@@ -18,8 +20,9 @@ def test_connection_never_carries_the_plaintext_credential() -> None:
     # `password`/`secret` field to assert the absence of; the schema itself
     # makes leaking one impossible.
     assert connection.credential_ref == "cred-1"
-    assert "password" not in Connection.model_fields
-    assert "secret" not in Connection.model_fields
+    field_names = {f.name for f in dataclasses.fields(Connection)}
+    assert "password" not in field_names
+    assert "secret" not in field_names
 
 
 def test_connection_id_stringifies_to_its_value() -> None:
