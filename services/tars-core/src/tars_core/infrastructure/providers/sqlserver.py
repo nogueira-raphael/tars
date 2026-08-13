@@ -24,7 +24,9 @@ class SqlServerProvider:
     async def list_tables(self, connection: Connection, schema: str) -> SchemaGraph:
         raise NotImplementedError
 
-    async def explain_query(self, connection: Connection, query: Query) -> ExecutionPlan:
+    async def explain_query(
+        self, connection: Connection, query: Query, *, analyze: bool
+    ) -> ExecutionPlan:
         raise NotImplementedError
 
     async def index_health(self, connection: Connection, schema: str) -> list[IndexRecommendation]:

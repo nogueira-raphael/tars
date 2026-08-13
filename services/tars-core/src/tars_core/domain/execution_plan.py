@@ -92,7 +92,11 @@ class PlanNode:
 
     target_schema: str | None = None
     target_relation: str | None = None
-    """Table or index name this node reads from, if any."""
+    """Table this node reads from, if any."""
+    index_name: str | None = None
+    """Index this node reads through, if any — distinct from
+    `target_relation` because an index scan reads *through* an index but
+    still reads rows *from* the underlying table (both are useful to show)."""
     alias: str | None = None
 
     estimated_rows: float | None = None

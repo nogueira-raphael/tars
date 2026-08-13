@@ -44,10 +44,10 @@ jobs:
           ${{ inputs.working-directory }}/src
           ${{ inputs.working-directory }}/tests
 
-      - name: pytest
+      - name: pytest (unit only — integration tests need a real database, not run in CI yet)
         run: |
-          if find "${{ inputs.working-directory }}/tests" -name 'test_*.py' | grep -q .; then
-            uv run --package ${{ inputs.package }} pytest ${{ inputs.working-directory }}/tests -v
+          if find "${{ inputs.working-directory }}/tests/unit" -name 'test_*.py' | grep -q .; then
+            uv run --package ${{ inputs.package }} pytest ${{ inputs.working-directory }}/tests/unit -v
           else
-            echo "No test files yet for ${{ inputs.package }} — nothing to run. See the build order in AGENTS.md."
+            echo "No unit test files yet for ${{ inputs.package }} — nothing to run. See the build order in AGENTS.md."
           fi

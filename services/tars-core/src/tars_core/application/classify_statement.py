@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from tars_core.domain.connection import Engine
 from tars_core.domain.ports import SqlClassifier
 
 
@@ -16,6 +17,6 @@ from tars_core.domain.ports import SqlClassifier
 class ClassifyStatementUseCase:
     classifier: SqlClassifier
 
-    def execute(self, sql: str, dialect: str) -> bool:
+    def execute(self, sql: str, engine: Engine) -> bool:
         """Returns True if the statement is mutating (not read-only)."""
-        raise NotImplementedError
+        return self.classifier.is_mutating(sql, engine)
